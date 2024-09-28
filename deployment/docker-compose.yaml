@@ -1,1 +1,60 @@
-ÿþ
+version: '3.9'
+services:
+  app:
+    image: ${APP_IMAGE}:${APP_IMAGE_TAG}
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    expose:
+      - ${APP_PORT}
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    depends_on:
+      - postgres_db
+      - redis_db
+    command: [ "/go/bin/app" ]
+
+  postgres_db:
+    image: ${POSTGRES_IMAGE}:${POSTGRES_IMAGE_TAG}
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+  # todo rewatch and delete deployment/migration,postgres-data
+
+  postgres_migrate:
+    image: ${MIGRATE_IMAGE}:${MIGRATE_TAG}
+    env_file:
+      - ./.env
+    # https://docs.docker.com/compose/compose-file/05-services/#volumes
+    volumes:
+      - ../internal/migrations:/migrations
+    depends_on:
+      - postgres_db
+    command: [
+      "-locations=filesystem:/migrations/",
+      "-url=jdbc:${POSTGRES_DRIVER}://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable",
+      "-user=${POSTGRES_USER}",
+      "-password=${POSTGRES_PASSWORD}",
+      "-schemas=public",
+      "-validateMigrationNaming=true",
+      "-outOfOrder=true",
+      "-connectRetries=3",
+      "migrate"
+    ]
+
+  redis_db:
+    image: ${REDIS_IMAGE}:${REDIS_IMAGE_TAG}
+    restart: unless-stopped
+    env_file:
+      - ./.env
+
+volumes:
+  migration:
+  postgres-data:
