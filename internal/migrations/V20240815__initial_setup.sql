@@ -4,8 +4,7 @@ create table users
     id       BIGSERIAL not null
         constraint users_id_pk
             primary key,
-    name     TEXT      not null,
-    inn      TEXT,
+    name     TEXT,
     email    TEXT      not null,
     password TEXT      not null,
     constraint users_name_email_pk
