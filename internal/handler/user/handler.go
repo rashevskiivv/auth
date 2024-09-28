@@ -1,35 +1,26 @@
-package handler
+package user
 
 import (
 	"log"
 	"net/http"
 	"strconv"
 	"tax-auth/internal/entity"
-	"tax-auth/internal/repository"
+	repository "tax-auth/internal/repository/user"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
-type UserHandler struct {
-	repo repository.UserRepo
+type Handler struct {
+	repo repository.Repository
 }
 
-func NewUserHandler(repo repository.UserRepo) UserHandler {
-	return UserHandler{
+func NewUserHandler(repo repository.Repository) Handler {
+	return Handler{
 		repo: repo,
 	}
 }
 
-func (h UserHandler) RegisterUserHandle(ctx *gin.Context) {
-
-}
-
-func (h UserHandler) AuthenticateUserHandle(ctx *gin.Context) {
-
-}
-
-func (h UserHandler) InsertUserHandle(ctx *gin.Context) {
+func (h *Handler) InsertUserHandle(ctx *gin.Context) {
 	var (
 		user     entity.User
 		response entity.Response
@@ -63,7 +54,7 @@ func (h UserHandler) InsertUserHandle(ctx *gin.Context) {
 	return
 }
 
-func (h UserHandler) ReadUsersHandle(ctx *gin.Context) {
+func (h *Handler) ReadUsersHandle(ctx *gin.Context) {
 	var (
 		filter   entity.Filter
 		response entity.Response
@@ -107,14 +98,4 @@ func (h UserHandler) ReadUsersHandle(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, response)
 	return
-}
-
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	return string(bytes), err
-}
-
-func comparePasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
 }

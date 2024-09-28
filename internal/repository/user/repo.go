@@ -1,11 +1,10 @@
-package repository
+package user
 
 import (
 	"context"
 	"fmt"
-	"log"
-	env "tax-auth/internal"
 	"tax-auth/internal/entity"
+	"tax-auth/internal/repository"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
@@ -13,39 +12,27 @@ import (
 
 //https://github.com/Masterminds/squirrel
 
-type UserRepo struct {
-	Postgres
+type Repo struct {
+	repository.Postgres
 	builder squirrel.StatementBuilderType
 }
 
-type UserRepository interface {
-	InsertUser(ctx context.Context, user entity.User) error
-	ReadUsers(ctx context.Context, filter entity.Filter) ([]entity.User, error)
-	UpdateUser(ctx context.Context, user entity.User, filter entity.Filter) error
-	DeleteUser(ctx context.Context, filter entity.Filter) error
-}
-
-func NewUserRepo(ctx context.Context) UserRepo {
-	url, err := env.GetDBUrlEnv()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return UserRepo{
-		Postgres: NewPG(ctx, url),
+func NewUserRepo(pg repository.Postgres) *Repo {
+	return &Repo{
+		Postgres: pg,
 		builder:  squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
 	}
 }
 
-func (repo *UserRepo) InsertUser(ctx context.Context, user entity.User) error {
-	q := `INSERT INTO users ("Name", "INN", "Email", "Password")
-VALUES (@name, @inn, @email, @password);`
+func (repo *Repo) InsertUser(ctx context.Context, user entity.User) error {
+	q := `INSERT INTO users ("Name", "Email", "Password")
+VALUES (@name, @email, @password);`
 	args := pgx.NamedArgs{
 		"name":     user.Name,
-		"inn":      user.INN,
 		"email":    user.Email,
 		"password": user.Password,
 	}
-	tag, err := repo.db.Exec(ctx, q, args)
+	tag, err := repo.DB.Exec(ctx, q, args)
 	if err != nil {
 		return fmt.Errorf("unable to insert row: %w", err)
 	}
@@ -55,12 +42,11 @@ VALUES (@name, @inn, @email, @password);`
 	return nil
 }
 
-func (repo *UserRepo) ReadUsers(ctx context.Context, filter entity.Filter) ([]entity.User, error) {
+func (repo *Repo) ReadUsers(ctx context.Context, filter entity.Filter) ([]entity.User, error) {
 	var users []entity.User
 	q := repo.builder.Select(
 		"id",
 		"name",
-		"inn",
 		"email",
 		"password",
 	).From(`users`)
@@ -80,7 +66,7 @@ func (repo *UserRepo) ReadUsers(ctx context.Context, filter entity.Filter) ([]en
 		return nil, fmt.Errorf("unable to convert query to sql: %w", err)
 	}
 
-	rows, err := repo.db.Query(ctx, sql, args)
+	rows, err := repo.DB.Query(ctx, sql, args)
 	if err != nil {
 		return nil, fmt.Errorf("unable to query users: %w", err)
 	}
@@ -91,7 +77,6 @@ func (repo *UserRepo) ReadUsers(ctx context.Context, filter entity.Filter) ([]en
 		err = rows.Scan(
 			&user.ID,
 			&user.Name,
-			&user.INN,
 			&user.Email,
 			&user.Password,
 		)
@@ -107,12 +92,12 @@ func (repo *UserRepo) ReadUsers(ctx context.Context, filter entity.Filter) ([]en
 	return users, nil
 }
 
-func (repo *UserRepo) UpdateUser(ctx context.Context, user entity.User, filter entity.Filter) error {
+func (repo *Repo) UpdateUser(ctx context.Context, user entity.User, filter entity.Filter) error {
 
 	return nil
 }
 
-func (repo *UserRepo) DeleteUser(ctx context.Context, filter entity.Filter) error {
+func (repo *Repo) DeleteUser(ctx context.Context, filter entity.Filter) error {
 
 	return nil
 }
