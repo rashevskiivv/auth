@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"log"
 	"tax-auth/internal/entity"
 	"tax-auth/internal/repository"
 
@@ -24,53 +25,60 @@ func NewUserRepo(pg repository.Postgres) *Repo {
 	}
 }
 
-func (repo *Repo) InsertUser(ctx context.Context, user entity.User) error {
-	q := `INSERT INTO users ("Name", "Email", "Password")
-VALUES (@name, @email, @password);`
+func (r *Repo) InsertUser(ctx context.Context, user entity.User) (*entity.User, error) {
+	var id int64
+	q := `INSERT INTO users ("name", "email", "password")
+VALUES (@name, @email, @password)
+RETURNING id;`
 	args := pgx.NamedArgs{
 		"name":     user.Name,
 		"email":    user.Email,
 		"password": user.Password,
 	}
-	tag, err := repo.DB.Exec(ctx, q, args)
+	err := r.DB.QueryRow(ctx, q, args).Scan(&id)
 	if err != nil {
-		return fmt.Errorf("unable to insert row: %w", err)
+		return nil, fmt.Errorf("unable to insert row: %w", err)
 	}
-	if tag.RowsAffected() == 0 {
-		return fmt.Errorf("user '%s' with '%s' already exists", user.Name, user.Email)
-	}
-	return nil
+	return &entity.User{ID: &id}, nil
 }
 
-func (repo *Repo) ReadUsers(ctx context.Context, filter entity.Filter) ([]entity.User, error) {
+func (r *Repo) ReadUsers(ctx context.Context, filter entity.UserFilter) ([]entity.User, error) {
 	var users []entity.User
-	q := repo.builder.Select(
+	q := r.builder.Select(
 		"id",
 		"name",
 		"email",
 		"password",
-	).From(`users`)
+	).From("users")
 
-	if len(filter.Conditions) > 0 { //todo len(nil) == ?
-		for key, values := range filter.Conditions {
-			q = q.Where(squirrel.Eq{key: values})
-		}
+	// Where
+	if len(filter.ID) > 0 {
+		q = q.Where(squirrel.Eq{"id": filter.ID})
+	}
+	if len(filter.Email) > 0 {
+		q = q.Where(squirrel.Eq{"email": filter.Email})
+	}
+	if len(filter.Name) > 0 {
+		q = q.Where(squirrel.Eq{"name": filter.Name})
 	}
 
+	// Limit
 	if filter.Limit != 0 {
 		q = q.Limit(uint64(filter.Limit))
 	}
 
 	sql, args, err := q.ToSql()
+	log.Println(sql)
+	log.Println(args)
 	if err != nil {
 		return nil, fmt.Errorf("unable to convert query to sql: %w", err)
 	}
 
-	rows, err := repo.DB.Query(ctx, sql, args)
+	rows, err := r.DB.Query(ctx, sql, args...)
+	defer rows.Close()
 	if err != nil {
 		return nil, fmt.Errorf("unable to query users: %w", err)
 	}
-	defer rows.Close()
 
 	for rows.Next() {
 		user := entity.User{}
@@ -92,12 +100,12 @@ func (repo *Repo) ReadUsers(ctx context.Context, filter entity.Filter) ([]entity
 	return users, nil
 }
 
-func (repo *Repo) UpdateUser(ctx context.Context, user entity.User, filter entity.Filter) error {
+func (r *Repo) UpdateUser(ctx context.Context, user entity.User, filter entity.UserFilter) error {
 
 	return nil
 }
 
-func (repo *Repo) DeleteUser(ctx context.Context, filter entity.Filter) error {
+func (r *Repo) DeleteUser(ctx context.Context, filter entity.UserFilter) error {
 
 	return nil
 }

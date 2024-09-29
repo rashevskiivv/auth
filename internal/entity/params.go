@@ -1,6 +1,5 @@
 package entity
 
-// Response Модель ответа сервера
 type Response struct {
 	Data    any    `json:"data"`
 	Message string `json:"message"`
@@ -12,8 +11,26 @@ type Env struct {
 	DBUrl   string
 }
 
-type Filter struct {
-	Cond       []map[string]string `json:"cond"`
-	Conditions map[string][]string `json:"conditions"`
-	Limit      int                 `json:"limit"`
+type UserFilter struct {
+	ID    []string `json:"id"`
+	Email []string `json:"email"`
+	Name  []string `json:"name"`
+	Limit int      `json:"limit"`
+}
+
+type RegisterInput struct {
+	User
+}
+
+type AuthenticateInput struct {
+	Password string
+	Hash     string
+}
+
+type RegisterOutput struct {
+	Token
+}
+
+type AuthenticateOutput struct {
+	Token
 }

@@ -3,25 +3,50 @@ package auth
 import (
 	"log"
 	"net/http"
-	"tax-auth/internal/repository/auth"
+	"tax-auth/internal/entity"
+	auth "tax-auth/internal/usecase/auth"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type Handler struct {
-	repo auth.Repository
+	uc auth.UseCaseI
 }
 
-func NewAuthHandler(repo auth.Repository) Handler {
-	return Handler{
-		repo: repo,
+func NewAuthHandler(uc auth.UseCaseI) *Handler {
+	return &Handler{
+		uc: uc,
 	}
 }
 
 func (h *Handler) RegisterUserHandle(ctx *gin.Context) {
+	var (
+		err error
+	)
+	request := entity.User{}
+	err = ctx.ShouldBind(&request)
+	if err != nil {
+		log.Println(err)                                             // todo test log.Fatal and Println
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) //todo change to response
+		return
+	}
+
+	registerInput := entity.RegisterInput{User: request}
+	token, err := h.uc.RegisterUser(ctx, registerInput)
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()}) //todo change to response struct
+		return
+	}
+	log.Println(token)
+
 	log.Println("registered")
-	ctx.JSON(http.StatusCreated, "registered")
+	ctx.JSON(http.StatusCreated, entity.Response{
+		Data:    token,
+		Message: "User registered. Access token in data.",
+		Errors:  "",
+	})
+	return
 	/* todo
 	1. get login and password
 	2. validate them
@@ -37,14 +62,4 @@ func (h *Handler) RegisterUserHandle(ctx *gin.Context) {
 func (h *Handler) AuthenticateUserHandle(ctx *gin.Context) {
 	log.Println("logged in")
 	ctx.JSON(http.StatusCreated, "logged in")
-}
-
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	return string(bytes), err
-}
-
-func comparePasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
 }

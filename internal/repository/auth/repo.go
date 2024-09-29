@@ -20,10 +20,10 @@ func NewAuthRepo(pg repository.Postgres) *Repo {
 	}
 }
 
-func (repo *Repo) ReadToken(ctx context.Context, filter entity.Filter) error {
+func (repo *Repo) ReadToken(ctx context.Context, filter entity.UserFilter) error {
 	return nil
 }
 
-func (repo *Repo) InsertToken(ctx context.Context, token string) error {
+func (repo *Repo) InsertToken(ctx context.Context, token entity.Token) error {
 	return nil
 }

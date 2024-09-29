@@ -9,10 +9,10 @@ import (
 	env "tax-auth/internal"
 	"tax-auth/internal/handler"
 	handlerAuth "tax-auth/internal/handler/auth"
-	handlerUser "tax-auth/internal/handler/user"
 	"tax-auth/internal/repository"
 	repositoryAuth "tax-auth/internal/repository/auth"
 	repositoryUser "tax-auth/internal/repository/user"
+	usecaseAuth "tax-auth/internal/usecase/auth"
 
 	"github.com/gin-gonic/gin"
 )
@@ -50,9 +50,12 @@ func registerHandlers(router *gin.Engine, pg *repository.Postgres) *gin.Engine {
 	// Repo
 	userRepo := repositoryUser.NewUserRepo(*pg)
 	authRepo := repositoryAuth.NewAuthRepo(*pg)
+	// UseCase
+	authUC := usecaseAuth.NewAuthUseCase(authRepo, userRepo)
+	//userUC := usecaseUser.NewUserUseCase(userRepo)
 	// Handler
-	userHandler := handlerUser.NewUserHandler(userRepo)
-	authHandler := handlerAuth.NewAuthHandler(authRepo)
+	//userHandler := handlerUser.NewUserHandler(userUC)
+	authHandler := handlerAuth.NewAuthHandler(authUC)
 
 	// Routing
 	router.NoRoute(handler.NotFound)
@@ -61,8 +64,8 @@ func registerHandlers(router *gin.Engine, pg *repository.Postgres) *gin.Engine {
 	router.POST("register", authHandler.RegisterUserHandle)
 	router.POST("login", authHandler.AuthenticateUserHandle)
 	// User
-	router.POST("users", userHandler.InsertUserHandle)
-	router.GET("users", userHandler.ReadUsersHandle)
+	//router.POST("users", userHandler.InsertUserHandle)
+	//router.GET("users", userHandler.ReadUsersHandle)
 
 	return router
 }

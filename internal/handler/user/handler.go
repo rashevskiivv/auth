@@ -14,8 +14,8 @@ type Handler struct {
 	repo repository.Repository
 }
 
-func NewUserHandler(repo repository.Repository) Handler {
-	return Handler{
+func NewUserHandler(repo repository.Repository) *Handler {
+	return &Handler{
 		repo: repo,
 	}
 }
@@ -56,7 +56,7 @@ func (h *Handler) InsertUserHandle(ctx *gin.Context) {
 
 func (h *Handler) ReadUsersHandle(ctx *gin.Context) {
 	var (
-		filter   entity.Filter
+		filter   entity.UserFilter
 		response entity.Response
 		err      error
 	)
