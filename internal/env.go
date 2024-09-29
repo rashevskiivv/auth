@@ -18,10 +18,12 @@ const (
 	envPostgresHost     = "POSTGRES_HOST"
 	envPostgresPort     = "POSTGRES_PORT"
 	envPostgresDB       = "POSTGRES_DB"
+	envJWTSecretKey     = "JWT_SECRET_KEY"
 )
 
 func init() {
-	if err := godotenv.Load("deployment/.env"); err != nil {
+	err := godotenv.Load("deployment/.env")
+	if err != nil {
 		log.Fatal("can not find .env file: ", err)
 	}
 }
@@ -65,4 +67,12 @@ func GetDBUrlEnv() (string, error) {
 		return "", fmt.Errorf("can not found: %v", envPostgresDB)
 	}
 	return fmt.Sprintf("%v://%v:%v@%v:%v/%v", dbDriver, dbUser, dbPassword, dbHost, dbPort, dbName), nil
+}
+
+func GetJWTSecretKey() (string, error) {
+	key := os.Getenv(envJWTSecretKey)
+	if key == "" {
+		return "", fmt.Errorf("can not found: %v", envJWTSecretKey)
+	}
+	return key, nil
 }
