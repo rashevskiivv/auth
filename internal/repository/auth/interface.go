@@ -6,6 +6,6 @@ import (
 )
 
 type Repository interface {
-	ReadToken(ctx context.Context, filter entity.UserFilter) error
+	ReadTokens(ctx context.Context, filter entity.TokenFilter) ([]entity.Token, error)
 	InsertToken(ctx context.Context, token entity.Token) error
 }

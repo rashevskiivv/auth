@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"fmt"
-	"log"
 	"tax-auth/internal/entity"
 	"tax-auth/internal/repository"
 
@@ -68,8 +67,6 @@ func (r *Repo) ReadUsers(ctx context.Context, filter entity.UserFilter) ([]entit
 	}
 
 	sql, args, err := q.ToSql()
-	log.Println(sql)
-	log.Println(args)
 	if err != nil {
 		return nil, fmt.Errorf("unable to convert query to sql: %w", err)
 	}

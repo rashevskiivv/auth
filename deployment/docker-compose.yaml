@@ -1,6 +1,7 @@
 version: '3.9'
 services:
   app:
+    container_name: app
     image: ${APP_IMAGE}:${APP_IMAGE_TAG}
     restart: unless-stopped
     env_file:
@@ -15,6 +16,7 @@ services:
     command: [ "/go/bin/app" ]
 
   postgres_db:
+    container_name: postgres
     image: ${POSTGRES_IMAGE}:${POSTGRES_IMAGE_TAG}
     restart: unless-stopped
     env_file:
@@ -29,6 +31,7 @@ services:
   # todo rewatch and delete deployment/migration,postgres-data
 
   postgres_migrate:
+    container_name: migrations
     image: ${MIGRATE_IMAGE}:${MIGRATE_TAG}
     env_file:
       - ./.env
@@ -50,6 +53,7 @@ services:
     ]
 
   redis_db:
+    container_name: redis
     image: ${REDIS_IMAGE}:${REDIS_IMAGE_TAG}
     restart: unless-stopped
     env_file:

@@ -15,20 +15,26 @@ type UserFilter struct {
 	ID    []string `json:"id"`
 	Email []string `json:"email"`
 	Name  []string `json:"name"`
-	Limit int      `json:"limit"`
+	Limit int32    `json:"limit"`
+}
+
+type TokenFilter struct {
+	ID     []string `json:"id"`
+	Token  []string `json:"token"`
+	UserID []string `json:"user_id"`
+	Limit  int32    `json:"limit"`
 }
 
 type RegisterInput struct {
 	User
 }
 
-type AuthenticateInput struct {
-	Password string
-	Hash     string
-}
-
 type RegisterOutput struct {
 	Token
+}
+
+type AuthenticateInput struct {
+	User
 }
 
 type AuthenticateOutput struct {

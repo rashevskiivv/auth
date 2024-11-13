@@ -3,15 +3,12 @@ package auth
 import (
 	"context"
 	"errors"
-	"log"
 	"net/mail"
-	env "tax-auth/internal"
 	"tax-auth/internal/entity"
 	"tax-auth/internal/repository/auth"
 	repositoryUser "tax-auth/internal/repository/user"
-	"time"
+	"tax-auth/internal/usecase"
 
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -50,12 +47,11 @@ func (uc *UseCase) RegisterUser(ctx context.Context, input entity.RegisterInput)
 		return nil, errors.New("user with this email already registered")
 	}
 
-	bytes, err := bcrypt.GenerateFromPassword([]byte(input.Password), 10)
+	hashedPassword, err := usecase.GenerateHashedPassword(input.Password)
 	if err != nil {
 		return nil, err
 	}
-	hashedPassword := string(bytes)
-	input.User.Password = hashedPassword
+	input.User.Password = *hashedPassword
 
 	user, err := uc.repoUser.InsertUser(ctx, input.User) //todo add dbtx
 	if err != nil {
@@ -65,23 +61,13 @@ func (uc *UseCase) RegisterUser(ctx context.Context, input entity.RegisterInput)
 		return nil, errors.New("user has no id")
 	}
 
-	secretKey, err := env.GetJWTSecretKey()
+	t, err := usecase.GetJWTToken(input.Email)
 	if err != nil {
 		return nil, err
 	}
-	payload := jwt.MapClaims{
-		"sub": input.Email,
-		"exp": time.Now().Add(time.Hour * 72).Unix(),
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-	t, err := token.SignedString([]byte(secretKey))
-	if err != nil {
-		return nil, err
-	}
-	log.Println(t)
 
 	insertTokenInput := entity.Token{
-		Token:  t,
+		Token:  *t,
 		UserID: *user.ID,
 	}
 	err = uc.repoToken.InsertToken(ctx, insertTokenInput)
@@ -91,7 +77,7 @@ func (uc *UseCase) RegisterUser(ctx context.Context, input entity.RegisterInput)
 
 	response := entity.RegisterOutput{
 		Token: entity.Token{
-			Token:  t,
+			Token:  *t,
 			UserID: *user.ID,
 		},
 	}
@@ -99,8 +85,54 @@ func (uc *UseCase) RegisterUser(ctx context.Context, input entity.RegisterInput)
 }
 
 func (uc *UseCase) AuthenticateUser(ctx context.Context, input entity.AuthenticateInput) (*entity.AuthenticateOutput, error) {
-	err := bcrypt.CompareHashAndPassword([]byte(input.Hash), []byte(input.Password))
-	return nil, err
+	emailOk, err := validateEmail(input.Email)
+	if err != nil {
+		return nil, err
+	}
+	if !emailOk {
+		return nil, errors.New("email is required")
+	}
+	if input.Password == "" {
+		return nil, errors.New("password is required")
+	}
+
+	users, err := uc.repoUser.ReadUsers(ctx, entity.UserFilter{
+		Email: []string{input.Email},
+		Limit: 1,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(users) == 0 {
+		return nil, errors.New("no user with this email")
+	}
+	user := users[0]
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
+	if err != nil {
+		return nil, err
+	}
+
+	t, err := usecase.GetJWTToken(input.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	insertTokenInput := entity.Token{
+		Token:  *t,
+		UserID: *user.ID,
+	}
+	err = uc.repoToken.InsertToken(ctx, insertTokenInput)
+	if err != nil {
+		return nil, err
+	}
+
+	response := entity.AuthenticateOutput{
+		Token: entity.Token{
+			Token:  *t,
+			UserID: *user.ID,
+		},
+	}
+	return &response, nil
 }
 
 func validateEmail(email string) (bool, error) {
