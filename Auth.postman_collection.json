@@ -1,0 +1,148 @@
+{
+	"info": {
+		"_postman_id": "0b98f9ae-7417-4a4d-8674-703011b2b0d1",
+		"name": "Auth",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18064498"
+	},
+	"item": [
+		{
+			"name": "login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"slava4@mail.ru\",\r\n    \"password\": \"pppp\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"slava4@mail.ru\",\r\n    \"password\": \"pppp\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get users",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": [\r\n        \"1\"\r\n    ],\r\n    \"email\": [\r\n        \"slava4@mail.ru\"\r\n    ],\r\n    \"name\": [\r\n        \"slava4\"\r\n    ],\r\n    \"limit\": 2\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete users",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "    {\r\n    \"id\": [\r\n        \"7\"\r\n    ],\r\n    \"email\": [\r\n        \"slava@mail.ru\"\r\n    ],\r\n    \"name\": [\r\n        \"slava\"\r\n    ],\r\n    \"limit\": 10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Upsert users",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"user\": {\r\n        \"email\": \"slava2@mail.ru\",\r\n        \"name\": \"slava2\",\r\n        \"password\": \"slava2\"\r\n    },\r\n    \"filter\": {\r\n        \"id\": [\r\n            \"7\"\r\n        ],\r\n        \"email\": [\r\n            \"slava@mail.ru\"\r\n        ],\r\n        \"name\": [\r\n            \"slava\"\r\n        ],\r\n        \"limit\": 10\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
