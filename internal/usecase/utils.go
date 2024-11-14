@@ -1,12 +1,21 @@
 package usecase
 
 import (
+	"net/mail"
 	env "tax-auth/internal"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
+
+func ValidateEmail(email string) (bool, error) {
+	address, err := mail.ParseAddress(email)
+	if err != nil {
+		return false, err
+	}
+	return address.Address != "", nil
+}
 
 func GenerateHashedPassword(password string) (*string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)

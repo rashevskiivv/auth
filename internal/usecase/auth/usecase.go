@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"errors"
-	"net/mail"
 	"tax-auth/internal/entity"
 	"tax-auth/internal/repository/auth"
 	repositoryUser "tax-auth/internal/repository/user"
@@ -25,7 +24,7 @@ func NewAuthUseCase(repo auth.Repository, repoUser repositoryUser.Repository) *U
 }
 
 func (uc *UseCase) RegisterUser(ctx context.Context, input entity.RegisterInput) (*entity.RegisterOutput, error) {
-	emailOk, err := validateEmail(input.Email)
+	emailOk, err := usecase.ValidateEmail(input.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +52,7 @@ func (uc *UseCase) RegisterUser(ctx context.Context, input entity.RegisterInput)
 	}
 	input.User.Password = *hashedPassword
 
-	user, err := uc.repoUser.InsertUser(ctx, input.User) //todo add dbtx
+	user, err := uc.repoUser.UpsertUser(ctx, input.User) //todo add dbtx
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +84,7 @@ func (uc *UseCase) RegisterUser(ctx context.Context, input entity.RegisterInput)
 }
 
 func (uc *UseCase) AuthenticateUser(ctx context.Context, input entity.AuthenticateInput) (*entity.AuthenticateOutput, error) {
-	emailOk, err := validateEmail(input.Email)
+	emailOk, err := usecase.ValidateEmail(input.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -133,12 +132,4 @@ func (uc *UseCase) AuthenticateUser(ctx context.Context, input entity.Authentica
 		},
 	}
 	return &response, nil
-}
-
-func validateEmail(email string) (bool, error) {
-	address, err := mail.ParseAddress(email)
-	if err != nil {
-		return false, err
-	}
-	return address.Address != "", nil
 }

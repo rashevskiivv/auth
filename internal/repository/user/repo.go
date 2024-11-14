@@ -24,10 +24,14 @@ func NewUserRepo(pg repository.Postgres) *Repo {
 	}
 }
 
-func (r *Repo) InsertUser(ctx context.Context, user entity.User) (*entity.User, error) {
+func (r *Repo) UpsertUser(ctx context.Context, user entity.User) (*entity.User, error) {
 	var id int64
-	q := `INSERT INTO users ("name", "email", "password")
+	const q = `INSERT INTO users ("name", "email", "password")
 VALUES (@name, @email, @password)
+ON CONFLICT (email, name)
+    DO UPDATE SET email    = EXCLUDED.email,
+                  name     = EXCLUDED.name,
+                  password = EXCLUDED.password
 RETURNING id;`
 	args := pgx.NamedArgs{
 		"name":     user.Name,
@@ -97,12 +101,34 @@ func (r *Repo) ReadUsers(ctx context.Context, filter entity.UserFilter) ([]entit
 	return users, nil
 }
 
-func (r *Repo) UpdateUser(ctx context.Context, user entity.User, filter entity.UserFilter) error {
-
-	return nil
-}
-
 func (r *Repo) DeleteUser(ctx context.Context, filter entity.UserFilter) error {
+	q := r.builder.Delete("users")
+
+	// Where
+	if len(filter.ID) > 0 {
+		q = q.Where(squirrel.Eq{"id": filter.ID})
+	}
+	if len(filter.Email) > 0 {
+		q = q.Where(squirrel.Eq{"email": filter.Email})
+	}
+	if len(filter.Name) > 0 {
+		q = q.Where(squirrel.Eq{"name": filter.Name})
+	}
+
+	// Limit
+	if filter.Limit != 0 {
+		q = q.Limit(uint64(filter.Limit))
+	}
+
+	sql, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("unable to convert query to sql: %w", err)
+	}
+
+	_, err = r.DB.Exec(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("unable to delete users: %w", err)
+	}
 
 	return nil
 }

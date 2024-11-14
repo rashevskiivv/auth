@@ -1,55 +1,48 @@
 package user
 
 import (
+	"errors"
+	"io"
 	"log"
 	"net/http"
-	"strconv"
 	"tax-auth/internal/entity"
-	repository "tax-auth/internal/repository/user"
+	usecaseUser "tax-auth/internal/usecase/user"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	repo repository.Repository
+	uc usecaseUser.UseCaseI
 }
 
-func NewUserHandler(repo repository.Repository) *Handler {
+func NewUserHandler(uc usecaseUser.UseCaseI) *Handler {
 	return &Handler{
-		repo: repo,
+		uc: uc,
 	}
 }
 
-func (h *Handler) InsertUserHandle(ctx *gin.Context) {
+func (h *Handler) UpsertUserHandle(ctx *gin.Context) {
 	var (
-		user     entity.User
+		input    entity.UpdateUsersInput
 		response entity.Response
 		err      error
 	)
 
-	if err = ctx.BindJSON(&user); err != nil {
+	if err = ctx.BindJSON(&input); err != nil {
 		log.Println(err)
-		response = entity.Response{
-			Errors: err.Error(),
-		}
-		ctx.JSON(http.StatusBadRequest, response)
+		response.Errors = err.Error()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
-	//todo validate here
-	err = h.repo.InsertUser(ctx, user)
+
+	err = h.uc.UpdateUsers(ctx, input)
 	if err != nil {
 		log.Println(err)
-		response = entity.Response{
-			Data:    nil,
-			Message: err.Error(),
-			Errors:  err.Error(),
-		}
+		response.Errors = err.Error()
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, response)
 		return
 	}
-	response = entity.Response{
-		Message: "Created",
-	}
+	response.Message = "Created"
 	ctx.JSON(http.StatusCreated, response)
 	return
 }
@@ -61,41 +54,57 @@ func (h *Handler) ReadUsersHandle(ctx *gin.Context) {
 		err      error
 	)
 
-	if err = ctx.BindJSON(&filter); err != nil {
-		log.Println(err)
-		response = entity.Response{
-			Errors: err.Error(),
-		}
-		ctx.JSON(http.StatusBadRequest, response)
-		return
+	err = ctx.ShouldBindJSON(&filter)
+	if errors.Is(err, io.EOF) {
+		err = nil
 	}
-	queryParams := ctx.Request.URL.Query() //todo решить что-то, почему не тело запроса
-	filter.Limit, err = strconv.Atoi(queryParams.Get("limit"))
 	if err != nil {
 		log.Println(err)
-		response = entity.Response{
-			Errors: err.Error(),
-		}
-		ctx.JSON(http.StatusBadRequest, response)
+		response.Errors = err.Error()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
-	filter.Conditions = queryParams //тут и limit
 
-	//todo validate here
-	users, err := h.repo.ReadUsers(ctx, filter)
+	users, err := h.uc.GetUsers(ctx, entity.GetUsersInput{Filter: filter})
 	if err != nil {
 		log.Println(err)
-		response = entity.Response{
-			Data:    nil,
-			Message: err.Error(),
-			Errors:  err.Error(),
-		}
+		response.Errors = err.Error()
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, response)
 		return
 	}
-	response = entity.Response{
-		Data: users,
+	if users == nil {
+		response.Errors = "No users found"
+		ctx.AbortWithStatusJSON(http.StatusNotFound, response)
+		return
 	}
+	response.Data = users.Response
 	ctx.JSON(http.StatusOK, response)
 	return
+}
+
+func (h *Handler) DeleteUsersHandle(ctx *gin.Context) {
+	var (
+		filter   entity.UserFilter
+		response entity.Response
+		err      error
+	)
+
+	if err = ctx.BindJSON(&filter); err != nil {
+		log.Println(err)
+		response.Errors = err.Error()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	err = h.uc.DeleteUsers(ctx, entity.DeleteUsersInput{Filter: filter})
+	if err != nil {
+		log.Println(err)
+		response.Errors = err.Error()
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, response)
+		return
+	}
+	response.Message = "Deleted"
+	ctx.JSON(http.StatusOK, response)
+	return
+
 }
