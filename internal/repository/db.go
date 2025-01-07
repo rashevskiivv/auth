@@ -26,7 +26,7 @@ func NewPG(ctx context.Context, connString string) (*Postgres, error) {
 			log.Panicf("unable to create connection pool: %s", err)
 		}
 
-		pgInstance = Postgres{db}
+		pgInstance = Postgres{DB: db}
 	})
 
 	err := pgInstance.Ping(ctx)
@@ -41,6 +41,7 @@ func (pg *Postgres) Ping(ctx context.Context) error {
 	return pg.DB.Ping(ctx)
 }
 
-func (pg *Postgres) Close() {
+func (pg *Postgres) Close() error {
 	pg.DB.Close()
+	return nil
 }

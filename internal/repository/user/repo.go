@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-//https://github.com/Masterminds/squirrel
+// https://github.com/Masterminds/squirrel
 
 type Repo struct {
 	repository.Postgres
@@ -26,7 +26,7 @@ func NewUserRepo(pg repository.Postgres) *Repo {
 
 func (r *Repo) UpsertUser(ctx context.Context, user entity.User) (*entity.User, error) {
 	var id int64
-	const q = `INSERT INTO users ("name", "email", "password")
+	const q = `INSERT INTO user ("name", "email", "password")
 VALUES (@name, @email, @password)
 ON CONFLICT (email, name)
     DO UPDATE SET email    = EXCLUDED.email,
@@ -40,7 +40,7 @@ RETURNING id;`
 	}
 	err := r.DB.QueryRow(ctx, q, args).Scan(&id)
 	if err != nil {
-		return nil, fmt.Errorf("unable to insert row: %w", err)
+		return nil, fmt.Errorf("unable to insert or update row: %v", err)
 	}
 	return &entity.User{ID: &id}, nil
 }
@@ -52,7 +52,7 @@ func (r *Repo) ReadUsers(ctx context.Context, filter entity.UserFilter) ([]entit
 		"name",
 		"email",
 		"password",
-	).From("users")
+	).From("user")
 
 	// Where
 	if len(filter.ID) > 0 {
@@ -72,13 +72,13 @@ func (r *Repo) ReadUsers(ctx context.Context, filter entity.UserFilter) ([]entit
 
 	sql, args, err := q.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("unable to convert query to sql: %w", err)
+		return nil, fmt.Errorf("unable to convert query to sql: %v", err)
 	}
 
 	rows, err := r.DB.Query(ctx, sql, args...)
 	defer rows.Close()
 	if err != nil {
-		return nil, fmt.Errorf("unable to query users: %w", err)
+		return nil, fmt.Errorf("unable to query users: %v", err)
 	}
 
 	for rows.Next() {
@@ -90,7 +90,7 @@ func (r *Repo) ReadUsers(ctx context.Context, filter entity.UserFilter) ([]entit
 			&user.Password,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("unable to scan row: %w", err)
+			return nil, fmt.Errorf("unable to scan row: %v", err)
 		}
 		users = append(users, user)
 	}
@@ -102,7 +102,7 @@ func (r *Repo) ReadUsers(ctx context.Context, filter entity.UserFilter) ([]entit
 }
 
 func (r *Repo) DeleteUser(ctx context.Context, filter entity.UserFilter) error {
-	q := r.builder.Delete("users")
+	q := r.builder.Delete("user")
 
 	// Where
 	if len(filter.ID) > 0 {
@@ -122,12 +122,12 @@ func (r *Repo) DeleteUser(ctx context.Context, filter entity.UserFilter) error {
 
 	sql, args, err := q.ToSql()
 	if err != nil {
-		return fmt.Errorf("unable to convert query to sql: %w", err)
+		return fmt.Errorf("unable to convert query to sql: %v", err)
 	}
 
 	_, err = r.DB.Exec(ctx, sql, args...)
 	if err != nil {
-		return fmt.Errorf("unable to delete users: %w", err)
+		return fmt.Errorf("unable to delete users: %v", err)
 	}
 
 	return nil

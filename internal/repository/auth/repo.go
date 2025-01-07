@@ -48,13 +48,13 @@ func (r *Repo) ReadTokens(ctx context.Context, filter entity.TokenFilter) ([]ent
 
 	sql, args, err := q.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("unable to convert query to sql: %w", err)
+		return nil, fmt.Errorf("unable to convert query to sql: %v", err)
 	}
 
 	rows, err := r.DB.Query(ctx, sql, args...)
 	defer rows.Close()
 	if err != nil {
-		return nil, fmt.Errorf("unable to query tokens: %w", err)
+		return nil, fmt.Errorf("unable to query tokens: %v", err)
 	}
 
 	for rows.Next() {
@@ -65,7 +65,7 @@ func (r *Repo) ReadTokens(ctx context.Context, filter entity.TokenFilter) ([]ent
 			&token.UserID,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("unable to scan row: %w", err)
+			return nil, fmt.Errorf("unable to scan row: %v", err)
 		}
 		tokens = append(tokens, token)
 	}
@@ -88,7 +88,7 @@ ON CONFLICT (user_id)
 	}
 	_, err := r.DB.Query(ctx, q, args)
 	if err != nil {
-		return fmt.Errorf("unable to insert row: %w", err)
+		return fmt.Errorf("unable to insert row: %v", err)
 	}
 	return nil
 }
