@@ -4,7 +4,7 @@ else
 CUR_DIR=$(shell pwd)
 endif
 
-IMAGE=auth
+IMAGE=auth_local
 TAG=latest
 RELEASE_NAME=auth
 DC_FILE=-f ${CUR_DIR}/deployment/docker-compose.yaml

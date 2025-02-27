@@ -16,7 +16,7 @@ services:
     command: [ "/go/bin/app" ]
 
   postgres_db:
-    container_name: postgres
+    container_name: postgres_db
     image: ${POSTGRES_IMAGE}:${POSTGRES_IMAGE_TAG}
     restart: unless-stopped
     env_file:
@@ -51,13 +51,6 @@ services:
       "-connectRetries=3",
       "migrate"
     ]
-
-  redis_db:
-    container_name: redis
-    image: ${REDIS_IMAGE}:${REDIS_IMAGE_TAG}
-    restart: unless-stopped
-    env_file:
-      - ./.env
 
 volumes:
   migration:
