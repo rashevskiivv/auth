@@ -13,7 +13,7 @@ services:
     depends_on:
       - postgres_db
       - redis_db
-    command: [ "/go/bin/app" ]
+    command: [ "/go/bin/auth-app" ]
 
   postgres_db:
     container_name: postgres_db

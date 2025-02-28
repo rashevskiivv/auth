@@ -10,7 +10,7 @@ COPY . .
 
 EXPOSE 80
 
-RUN go build -o /go/bin/app ./cmd/main.go
+RUN go build -o /go/bin/auth-app ./cmd/main.go
 
 FROM alpine:3.20
 
@@ -18,6 +18,6 @@ WORKDIR /auth
 
 COPY --from=builder /auth/internal/migration /migration
 
-COPY --from=builder /go/bin/app /go/bin/app
+COPY --from=builder /go/bin/auth-app /go/bin/auth-app
 
-CMD ./go/bin/app
+CMD ./go/bin/auth-app
