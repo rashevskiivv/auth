@@ -49,11 +49,11 @@ func (f *UserFilter) Validate() error {
 			}
 			dropFound := strings.Contains(n, "drop")
 			if dropFound {
-				return fmt.Errorf("%v. name contain \"drop\". It is restricted", i)
+				return fmt.Errorf("%v. name contains \"drop\". It is restricted", i)
 			}
 			deleteFound := strings.Contains(n, "delete")
 			if deleteFound {
-				return fmt.Errorf("%v. name contain \"delete\". It is restricted", i)
+				return fmt.Errorf("%v. name contains \"delete\". It is restricted", i)
 			}
 		}
 	}

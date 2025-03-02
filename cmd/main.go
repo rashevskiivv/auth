@@ -36,10 +36,15 @@ func main() {
 		log.Fatal(err)
 	}
 	defer func() {
-		pg.Close()
+		err = pg.Close()
+		if err != nil {
+			log.Fatalf("pg instance close error: %v", err)
+		}
+		log.Println("pg instance closed")
 	}()
 
-	router = registerHandlers(router, pg)
+	authHandler, userHandler := createHandlers(pg)
+	router = registerHandlers(router, authHandler, userHandler)
 
 	// Running
 	err = router.Run(fmt.Sprintf(":%v", strconv.Itoa(appPort)))
@@ -48,7 +53,7 @@ func main() {
 	}
 }
 
-func registerHandlers(router *gin.Engine, pg *repository.Postgres) *gin.Engine {
+func createHandlers(pg *repository.Postgres) (handlerAuth.HandlerI, handlerUser.HandlerI) {
 	// Repo
 	userRepo := repositoryUser.NewUserRepo(*pg)
 	authRepo := repositoryAuth.NewAuthRepo(*pg)
@@ -59,6 +64,12 @@ func registerHandlers(router *gin.Engine, pg *repository.Postgres) *gin.Engine {
 	authHandler := handlerAuth.NewAuthHandler(authUC)
 	userHandler := handlerUser.NewUserHandler(userUC)
 
+	log.Println("handlers created")
+
+	return authHandler, userHandler
+}
+
+func registerHandlers(router *gin.Engine, authHandler handlerAuth.HandlerI, userHandler handlerUser.HandlerI) *gin.Engine {
 	// Routing
 	router.NoRoute(handler.NotFound)
 	router.GET("/_hc", handler.HealthCheck)
@@ -69,6 +80,8 @@ func registerHandlers(router *gin.Engine, pg *repository.Postgres) *gin.Engine {
 	router.POST("users", userHandler.UpsertUserHandle)
 	router.GET("users", userHandler.ReadUsersHandle)
 	router.DELETE("users", userHandler.DeleteUsersHandle)
+
+	log.Println("handlers registered")
 
 	return router
 }
@@ -83,5 +96,6 @@ func getPGInstance() (*repository.Postgres, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Println("pg instance created")
 	return pg, nil
 }
