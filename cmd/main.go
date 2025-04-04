@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"tax-auth/pkg/utils"
 
 	env "tax-auth/internal"
-	"tax-auth/internal/handler"
 	handlerAuth "tax-auth/internal/handler/auth"
 	handlerUser "tax-auth/internal/handler/user"
 	"tax-auth/internal/repository"
@@ -44,6 +44,7 @@ func main() {
 	}()
 
 	authHandler, userHandler := createHandlers(pg)
+	router.Use(utils.TokenAuthMiddleware(authHandler))
 	router = registerHandlers(router, authHandler, userHandler)
 
 	// Running
@@ -71,8 +72,8 @@ func createHandlers(pg *repository.Postgres) (handlerAuth.HandlerI, handlerUser.
 
 func registerHandlers(router *gin.Engine, authHandler handlerAuth.HandlerI, userHandler handlerUser.HandlerI) *gin.Engine {
 	// Routing
-	router.NoRoute(handler.NotFound)
-	router.GET("/_hc", handler.HealthCheck)
+	router.NoRoute(utils.NotFound)
+	router.GET("/_hc", utils.HealthCheck)
 	// Auth
 	router.POST("register", authHandler.RegisterUserHandle)
 	router.POST("login", authHandler.AuthenticateUserHandle)

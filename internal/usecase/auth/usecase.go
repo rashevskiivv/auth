@@ -3,6 +3,9 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
+	"log"
+	"strconv"
 	"tax-auth/internal/entity"
 	"tax-auth/internal/repository/auth"
 	repositoryUser "tax-auth/internal/repository/user"
@@ -132,4 +135,28 @@ func (uc *UseCase) AuthenticateUser(ctx context.Context, input entity.Authentica
 		},
 	}
 	return &response, nil
+}
+
+func (uc *UseCase) CheckToken(ctx context.Context, input entity.CheckTokenInput) (entity.CheckTokenOutput, error) {
+	if input.UserID == "" {
+		log.Println("id is empty")
+		return entity.CheckTokenOutput{}, fmt.Errorf("id is empty")
+	}
+	_, err := strconv.ParseInt(input.UserID, 10, 64)
+	if err != nil {
+		log.Println(err)
+		return entity.CheckTokenOutput{}, err
+	}
+
+	filter := entity.TokenFilter{UserID: []string{input.UserID}}
+	tokens, err := uc.repoToken.ReadTokens(ctx, filter)
+	if err != nil {
+		return entity.CheckTokenOutput{}, err
+	}
+	if len(tokens) == 0 {
+		log.Println("no token with specified user_id")
+		return entity.CheckTokenOutput{}, errors.New("no token with specified user_id")
+	}
+
+	return entity.CheckTokenOutput{Token: tokens[0]}, nil
 }

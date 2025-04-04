@@ -22,3 +22,11 @@ type AuthenticateInput struct {
 type AuthenticateOutput struct {
 	Token
 }
+
+type CheckTokenInput struct {
+	UserID string
+}
+
+type CheckTokenOutput struct {
+	Token
+}

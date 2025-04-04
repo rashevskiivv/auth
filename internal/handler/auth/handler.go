@@ -74,3 +74,11 @@ func (h *Handler) AuthenticateUserHandle(ctx *gin.Context) {
 	})
 	return
 }
+
+func (h *Handler) CheckTokenHandle(ctx *gin.Context, id string) (string, error) {
+	token, err := h.uc.CheckToken(ctx, entity.CheckTokenInput{UserID: id})
+	if err != nil {
+		return "", err
+	}
+	return token.Token.Token, nil
+}
