@@ -1,6 +1,6 @@
-module tax-auth
+module github.com/rashevskiivv/auth
 
-go 1.22
+go 1.24
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
