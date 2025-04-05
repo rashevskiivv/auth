@@ -11,7 +11,7 @@ DB_TAG=latest
 RELEASE_NAME=auth
 DC_FILE=-f ${CUR_DIR}/deployment/docker-compose.yaml
 
-.PHONY: compile compile-db copy-env copy-env-windows deploy deploy-app deploy-postgres delete delete-app delete-postgres
+.PHONY: compile compile-db copy-env copy-env-windows deploy deploy-app deploy-pg delete delete-app delete-pg
 
 compile:
 	docker build --no-cache -f .docker/Dockerfile -t ${APP_IMAGE}:${APP_TAG} --target builder .
@@ -31,7 +31,7 @@ deploy:
 deploy-app:
 	cd deployment && docker-compose ${DC_FILE} -p ${RELEASE_NAME} up -d app
 
-deploy-postgres:
+deploy-pg:
 	cd deployment && docker-compose ${DC_FILE} -p ${RELEASE_NAME} up -d auth_db postgres_migrate
 
 delete:
@@ -40,5 +40,5 @@ delete:
 delete-app:
 	cd deployment && docker-compose ${DC_FILE} -p ${RELEASE_NAME} rm -sf app
 
-delete-postgres:
-	cd deployment && docker-compose ${DC_FILE} -p ${RELEASE_NAME} rm -sf postgres_db  postgres_migrate
+delete-pg:
+	cd deployment && docker-compose ${DC_FILE} -p ${RELEASE_NAME} rm -sf auth_db  postgres_migrate

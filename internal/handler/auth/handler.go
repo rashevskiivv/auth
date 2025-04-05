@@ -91,13 +91,12 @@ func (h *Handler) CheckTokenHandle(ctx *gin.Context) {
 	requiredToken, err := h.uc.CheckToken(ctx, entity.CheckTokenInput{UserID: id})
 	if err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, entity.Response{Errors: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, entity.Response{Errors: err.Error()})
 		return
 	}
 	if requiredToken.Token.Token != token {
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, entity.Response{Message: "Token is invalid", Errors: "Token is invalid"})
 		return
 	}
-	ctx.Status(http.StatusOK)
 	return
 }
