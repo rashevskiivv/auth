@@ -6,9 +6,8 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/rashevskiivv/auth/pkg/utils"
-
 	env "github.com/rashevskiivv/auth/internal"
+	"github.com/rashevskiivv/auth/internal/handler"
 	handlerAuth "github.com/rashevskiivv/auth/internal/handler/auth"
 	handlerUser "github.com/rashevskiivv/auth/internal/handler/user"
 	"github.com/rashevskiivv/auth/internal/repository"
@@ -72,15 +71,15 @@ func createHandlers(pg *repository.Postgres) (handlerAuth.HandlerI, handlerUser.
 
 func registerHandlers(router *gin.Engine, authHandler handlerAuth.HandlerI, userHandler handlerUser.HandlerI) *gin.Engine {
 	// Routing
-	router.NoRoute(utils.NotFound)
-	router.GET("/_hc", utils.HealthCheck)
+	router.NoRoute(handler.NotFound)
+	router.GET("/_hc", handler.HealthCheck)
 	// Auth
 	router.POST("register", authHandler.RegisterUserHandle)
 	router.POST("login", authHandler.AuthenticateUserHandle)
 	router.GET("check", authHandler.CheckTokenHandle)
 	// User
 	group := router.Group("users")
-	group.Use(utils.TokenAuthMiddleware(authHandler))
+	group.Use(handler.TokenAuthMiddleware(authHandler))
 	group.POST("", userHandler.UpsertUserHandle)
 	group.GET("", userHandler.ReadUsersHandle)
 	group.DELETE("", userHandler.DeleteUsersHandle)

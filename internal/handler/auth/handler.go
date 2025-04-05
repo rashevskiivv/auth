@@ -21,6 +21,8 @@ func NewAuthHandler(uc auth.UseCaseI) *Handler {
 }
 
 func (h *Handler) RegisterUserHandle(ctx *gin.Context) {
+	log.Println("handle RegisterUserHandle started")
+	defer log.Println("handle RegisterUserHandle finished")
 	var (
 		err error
 	)
@@ -52,6 +54,8 @@ func (h *Handler) RegisterUserHandle(ctx *gin.Context) {
 }
 
 func (h *Handler) AuthenticateUserHandle(ctx *gin.Context) {
+	log.Println("handle AuthenticateUserHandle started")
+	defer log.Println("handle AuthenticateUserHandle finished")
 	var request entity.User
 	err := ctx.BindJSON(&request)
 	if err != nil {
@@ -77,6 +81,8 @@ func (h *Handler) AuthenticateUserHandle(ctx *gin.Context) {
 }
 
 func (h *Handler) CheckTokenHandle(ctx *gin.Context) {
+	log.Println("handle CheckTokenHandle started")
+	defer log.Println("handle CheckTokenHandle finished")
 	id := ctx.Request.Header.Get("id")
 	token := ctx.Request.Header.Get("token")
 	if id == "" {

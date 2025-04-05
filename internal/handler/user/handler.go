@@ -28,6 +28,8 @@ func (h *Handler) UpsertUserHandle(ctx *gin.Context) {
 		response entity.Response
 		err      error
 	)
+	log.Println("handle UpsertUserHandle started")
+	defer log.Println("handle UpsertUserHandle finished")
 
 	if err = ctx.BindJSON(&input); err != nil {
 		log.Println(err)
@@ -54,6 +56,8 @@ func (h *Handler) ReadUsersHandle(ctx *gin.Context) {
 		response entity.Response
 		err      error
 	)
+	log.Println("handle ReadUsersHandle started")
+	defer log.Println("handle ReadUsersHandle finished")
 
 	err = ctx.ShouldBindJSON(&filter)
 	if errors.Is(err, io.EOF) {
@@ -89,6 +93,8 @@ func (h *Handler) DeleteUsersHandle(ctx *gin.Context) {
 		response entity.Response
 		err      error
 	)
+	log.Println("handle DeleteUsersHandle started")
+	defer log.Println("handle DeleteUsersHandle finished")
 
 	if err = ctx.BindJSON(&filter); err != nil {
 		log.Println(err)
