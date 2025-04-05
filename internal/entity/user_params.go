@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"tax-auth/internal/usecase"
+
+	"github.com/rashevskiivv/auth/internal/usecase"
 )
 
 type UserFilter struct {

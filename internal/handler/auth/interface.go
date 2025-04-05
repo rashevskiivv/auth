@@ -7,5 +7,5 @@ import (
 type HandlerI interface {
 	RegisterUserHandle(ctx *gin.Context)
 	AuthenticateUserHandle(ctx *gin.Context)
-	CheckTokenHandle(ctx *gin.Context, id string) (string, error)
+	CheckTokenHandle(ctx *gin.Context)
 }

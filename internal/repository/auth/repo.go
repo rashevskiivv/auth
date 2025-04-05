@@ -3,8 +3,9 @@ package auth
 import (
 	"context"
 	"fmt"
-	"tax-auth/internal/entity"
-	"tax-auth/internal/repository"
+
+	"github.com/rashevskiivv/auth/internal/entity"
+	"github.com/rashevskiivv/auth/internal/repository"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
@@ -28,7 +29,7 @@ func (r *Repo) ReadTokens(ctx context.Context, filter entity.TokenFilter) ([]ent
 		"id",
 		"token",
 		"user_id",
-	).From("tokens")
+	).From("token")
 
 	// Where
 	if len(filter.ID) > 0 {
@@ -77,7 +78,7 @@ func (r *Repo) ReadTokens(ctx context.Context, filter entity.TokenFilter) ([]ent
 }
 
 func (r *Repo) InsertToken(ctx context.Context, token entity.Token) error {
-	q := `INSERT INTO tokens ("token", "user_id")
+	q := `INSERT INTO token ("token", "user_id")
 VALUES (@token, @user_id)
 ON CONFLICT (user_id)
     DO UPDATE SET token   = EXCLUDED.token,

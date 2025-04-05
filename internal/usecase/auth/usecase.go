@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"tax-auth/internal/entity"
-	"tax-auth/internal/repository/auth"
-	repositoryUser "tax-auth/internal/repository/user"
-	"tax-auth/internal/usecase"
+
+	"github.com/rashevskiivv/auth/internal/entity"
+	"github.com/rashevskiivv/auth/internal/repository/auth"
+	repositoryUser "github.com/rashevskiivv/auth/internal/repository/user"
+	"github.com/rashevskiivv/auth/internal/usecase"
 
 	"golang.org/x/crypto/bcrypt"
 )

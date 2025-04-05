@@ -2,8 +2,9 @@ package usecase
 
 import (
 	"net/mail"
-	env "tax-auth/internal"
 	"time"
+
+	env "github.com/rashevskiivv/auth/internal"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"

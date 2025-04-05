@@ -5,16 +5,17 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"tax-auth/pkg/utils"
 
-	env "tax-auth/internal"
-	handlerAuth "tax-auth/internal/handler/auth"
-	handlerUser "tax-auth/internal/handler/user"
-	"tax-auth/internal/repository"
-	repositoryAuth "tax-auth/internal/repository/auth"
-	repositoryUser "tax-auth/internal/repository/user"
-	usecaseAuth "tax-auth/internal/usecase/auth"
-	usecaseUser "tax-auth/internal/usecase/user"
+	"github.com/rashevskiivv/auth/pkg/utils"
+
+	env "github.com/rashevskiivv/auth/internal"
+	handlerAuth "github.com/rashevskiivv/auth/internal/handler/auth"
+	handlerUser "github.com/rashevskiivv/auth/internal/handler/user"
+	"github.com/rashevskiivv/auth/internal/repository"
+	repositoryAuth "github.com/rashevskiivv/auth/internal/repository/auth"
+	repositoryUser "github.com/rashevskiivv/auth/internal/repository/user"
+	usecaseAuth "github.com/rashevskiivv/auth/internal/usecase/auth"
+	usecaseUser "github.com/rashevskiivv/auth/internal/usecase/user"
 
 	"github.com/gin-gonic/gin"
 )
@@ -44,7 +45,6 @@ func main() {
 	}()
 
 	authHandler, userHandler := createHandlers(pg)
-	router.Use(utils.TokenAuthMiddleware(authHandler))
 	router = registerHandlers(router, authHandler, userHandler)
 
 	// Running
@@ -77,10 +77,13 @@ func registerHandlers(router *gin.Engine, authHandler handlerAuth.HandlerI, user
 	// Auth
 	router.POST("register", authHandler.RegisterUserHandle)
 	router.POST("login", authHandler.AuthenticateUserHandle)
+	router.GET("check", authHandler.CheckTokenHandle)
 	// User
-	router.POST("users", userHandler.UpsertUserHandle)
-	router.GET("users", userHandler.ReadUsersHandle)
-	router.DELETE("users", userHandler.DeleteUsersHandle)
+	group := router.Group("users")
+	group.Use(utils.TokenAuthMiddleware(authHandler))
+	group.POST("", userHandler.UpsertUserHandle)
+	group.GET("", userHandler.ReadUsersHandle)
+	group.DELETE("", userHandler.DeleteUsersHandle)
 
 	log.Println("handlers registered")
 

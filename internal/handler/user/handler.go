@@ -5,8 +5,9 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"tax-auth/internal/entity"
-	usecaseUser "tax-auth/internal/usecase/user"
+
+	"github.com/rashevskiivv/auth/internal/entity"
+	usecaseUser "github.com/rashevskiivv/auth/internal/usecase/user"
 
 	"github.com/gin-gonic/gin"
 )

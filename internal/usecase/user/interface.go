@@ -2,7 +2,8 @@ package user
 
 import (
 	"context"
-	"tax-auth/internal/entity"
+
+	"github.com/rashevskiivv/auth/internal/entity"
 )
 
 type UseCaseI interface {

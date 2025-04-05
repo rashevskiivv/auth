@@ -3,8 +3,9 @@ package user
 import (
 	"context"
 	"fmt"
-	"tax-auth/internal/entity"
-	"tax-auth/internal/repository"
+
+	"github.com/rashevskiivv/auth/internal/entity"
+	"github.com/rashevskiivv/auth/internal/repository"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
@@ -26,7 +27,7 @@ func NewUserRepo(pg repository.Postgres) *Repo {
 
 func (r *Repo) UpsertUser(ctx context.Context, user entity.User) (*entity.User, error) {
 	var id int64
-	const q = `INSERT INTO user ("name", "email", "password")
+	const q = `INSERT INTO public.user ("name", "email", "password")
 VALUES (@name, @email, @password)
 ON CONFLICT (email, name)
     DO UPDATE SET email    = EXCLUDED.email,
@@ -52,7 +53,7 @@ func (r *Repo) ReadUsers(ctx context.Context, filter entity.UserFilter) ([]entit
 		"name",
 		"email",
 		"password",
-	).From("user")
+	).From("public.user")
 
 	// Where
 	if len(filter.ID) > 0 {

@@ -3,8 +3,9 @@ package auth
 import (
 	"log"
 	"net/http"
-	"tax-auth/internal/entity"
-	"tax-auth/internal/usecase/auth"
+
+	"github.com/rashevskiivv/auth/internal/entity"
+	"github.com/rashevskiivv/auth/internal/usecase/auth"
 
 	"github.com/gin-gonic/gin"
 )
@@ -75,10 +76,28 @@ func (h *Handler) AuthenticateUserHandle(ctx *gin.Context) {
 	return
 }
 
-func (h *Handler) CheckTokenHandle(ctx *gin.Context, id string) (string, error) {
-	token, err := h.uc.CheckToken(ctx, entity.CheckTokenInput{UserID: id})
-	if err != nil {
-		return "", err
+func (h *Handler) CheckTokenHandle(ctx *gin.Context) {
+	id := ctx.Request.Header.Get("id")
+	token := ctx.Request.Header.Get("token")
+	if id == "" {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, entity.Response{Message: "Provided id is empty", Errors: "Provided id is empty"})
+		return
 	}
-	return token.Token.Token, nil
+	if token == "" {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, entity.Response{Message: "Provided token is empty", Errors: "Provided token is empty"})
+		return
+	}
+
+	requiredToken, err := h.uc.CheckToken(ctx, entity.CheckTokenInput{UserID: id})
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, entity.Response{Errors: err.Error()})
+		return
+	}
+	if requiredToken.Token.Token != token {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, entity.Response{Message: "Token is invalid", Errors: "Token is invalid"})
+		return
+	}
+	ctx.Status(http.StatusOK)
+	return
 }
