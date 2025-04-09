@@ -6,7 +6,7 @@ endif
 
 APP_IMAGE=auth_local
 APP_TAG=latest
-DB_IMAGE=auth_db
+DB_IMAGE=auth-db
 DB_TAG=latest
 RELEASE_NAME=auth
 DC_FILE=-f ${CUR_DIR}/deployment/docker-compose.yaml
@@ -32,7 +32,7 @@ deploy-app:
 	cd deployment && docker-compose ${DC_FILE} -p ${RELEASE_NAME} up -d app
 
 deploy-pg:
-	cd deployment && docker-compose ${DC_FILE} -p ${RELEASE_NAME} up -d auth_db postgres_migrate
+	cd deployment && docker-compose ${DC_FILE} -p ${RELEASE_NAME} up -d auth-db postgres_migrate
 
 delete:
 	cd deployment && docker-compose ${DC_FILE} -p ${RELEASE_NAME} rm -sf
@@ -41,4 +41,4 @@ delete-app:
 	cd deployment && docker-compose ${DC_FILE} -p ${RELEASE_NAME} rm -sf app
 
 delete-pg:
-	cd deployment && docker-compose ${DC_FILE} -p ${RELEASE_NAME} rm -sf auth_db  postgres_migrate
+	cd deployment && docker-compose ${DC_FILE} -p ${RELEASE_NAME} rm -sf auth-db  postgres_migrate
