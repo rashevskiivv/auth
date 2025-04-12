@@ -80,8 +80,8 @@ func (uc *UseCase) RegisterUser(ctx context.Context, input entity.RegisterInput)
 
 	response := entity.RegisterOutput{
 		Token: entity.Token{
-			Token:  *t,
-			UserID: *user.ID,
+			ID:    user.ID,
+			Token: *t,
 		},
 	}
 	return &response, nil
