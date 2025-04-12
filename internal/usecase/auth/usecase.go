@@ -140,7 +140,6 @@ func (uc *UseCase) AuthenticateUser(ctx context.Context, input entity.Authentica
 
 func (uc *UseCase) CheckToken(ctx context.Context, input entity.CheckTokenInput) (entity.CheckTokenOutput, error) {
 	if input.UserID == "" {
-		log.Println("id is empty")
 		return entity.CheckTokenOutput{}, fmt.Errorf("id is empty")
 	}
 	_, err := strconv.ParseInt(input.UserID, 10, 64)
@@ -155,7 +154,6 @@ func (uc *UseCase) CheckToken(ctx context.Context, input entity.CheckTokenInput)
 		return entity.CheckTokenOutput{}, err
 	}
 	if len(tokens) == 0 {
-		log.Println("no token with specified user_id")
 		return entity.CheckTokenOutput{}, errors.New("no token with specified user_id")
 	}
 

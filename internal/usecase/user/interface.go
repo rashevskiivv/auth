@@ -8,6 +8,6 @@ import (
 
 type UseCaseI interface {
 	GetUsers(ctx context.Context, input entity.GetUsersInput) (*entity.GetUsersOutput, error)
-	UpdateUsers(ctx context.Context, input entity.UpdateUsersInput) error
+	UpdateUsers(ctx context.Context, input entity.UpdateUsersInput) (*entity.User, error)
 	DeleteUsers(ctx context.Context, input entity.DeleteUsersInput) error
 }

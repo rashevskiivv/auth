@@ -86,10 +86,12 @@ func (h *Handler) CheckTokenHandle(ctx *gin.Context) {
 	id := ctx.Request.Header.Get("id")
 	token := ctx.Request.Header.Get("token")
 	if id == "" {
+		log.Println("Provided id is empty")
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, entity.Response{Message: "Provided id is empty", Errors: "Provided id is empty"})
 		return
 	}
 	if token == "" {
+		log.Println("Provided token is empty")
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, entity.Response{Message: "Provided token is empty", Errors: "Provided token is empty"})
 		return
 	}
@@ -101,6 +103,7 @@ func (h *Handler) CheckTokenHandle(ctx *gin.Context) {
 		return
 	}
 	if requiredToken.Token.Token != token {
+		log.Println("Token is invalid")
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, entity.Response{Message: "Token is invalid", Errors: "Token is invalid"})
 		return
 	}

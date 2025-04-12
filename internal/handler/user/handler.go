@@ -38,7 +38,7 @@ func (h *Handler) UpsertUserHandle(ctx *gin.Context) {
 		return
 	}
 
-	err = h.uc.UpdateUsers(ctx, input)
+	output, err := h.uc.UpdateUsers(ctx, input)
 	if err != nil {
 		log.Println(err)
 		response.Errors = err.Error()
@@ -46,6 +46,7 @@ func (h *Handler) UpsertUserHandle(ctx *gin.Context) {
 		return
 	}
 	response.Message = "Created"
+	response.Data = output.ID
 	ctx.JSON(http.StatusCreated, response)
 	return
 }

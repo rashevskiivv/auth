@@ -32,14 +32,17 @@ func (uc *UseCase) GetUsers(ctx context.Context, input entity.GetUsersInput) (*e
 	return &entity.GetUsersOutput{Response: users}, nil
 }
 
-func (uc *UseCase) UpdateUsers(ctx context.Context, input entity.UpdateUsersInput) error {
+func (uc *UseCase) UpdateUsers(ctx context.Context, input entity.UpdateUsersInput) (*entity.User, error) {
 	err := input.Filter.Validate()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = uc.repo.UpsertUser(ctx, input.Model)
-	return err
+	output, err := uc.repo.UpsertUser(ctx, input.Model)
+	if err != nil {
+		return nil, err
+	}
+	return output, nil
 }
 
 func (uc *UseCase) DeleteUsers(ctx context.Context, input entity.DeleteUsersInput) error {
