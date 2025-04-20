@@ -15,4 +15,5 @@ const (
 
 	AppAPI             = "api"
 	AppRecommendations = "recommendations"
+	AppAuth            = "auth"
 )
