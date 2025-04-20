@@ -30,6 +30,7 @@ func (h *Handler) UpsertUserHandle(ctx *gin.Context) {
 	)
 	log.Println("handle UpsertUserHandle started")
 	defer log.Println("handle UpsertUserHandle finished")
+	appSource := ctx.Request.Header.Get("Origin")
 
 	if err = ctx.BindJSON(&input); err != nil {
 		log.Println(err)
@@ -37,6 +38,7 @@ func (h *Handler) UpsertUserHandle(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
+	input.WhichRequest = appSource
 
 	output, err := h.uc.UpdateUsers(ctx, input)
 	if err != nil {

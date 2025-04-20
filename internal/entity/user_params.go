@@ -75,8 +75,9 @@ type GetUsersOutput struct {
 }
 
 type UpdateUsersInput struct {
-	Model  User       `json:"user"`
-	Filter UserFilter `json:"filter"`
+	Model        User       `json:"user"`
+	Filter       UserFilter `json:"filter"`
+	WhichRequest string
 }
 
 type DeleteUsersInput struct {

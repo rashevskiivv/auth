@@ -42,6 +42,8 @@ func (uc *UseCase) UpdateUsers(ctx context.Context, input entity.UpdateUsersInpu
 	if err != nil {
 		return nil, err
 	}
+
+	// todo send to another service using input.WhichRequest
 	return output, nil
 }
 

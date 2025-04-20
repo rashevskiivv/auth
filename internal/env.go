@@ -18,7 +18,11 @@ const (
 	envPostgresHost     = "POSTGRES_HOST"
 	envPostgresPort     = "POSTGRES_PORT"
 	envPostgresDB       = "POSTGRES_DB"
-	envJWTSecretKey     = "JWT_SECRET_KEY"
+
+	envJWTSecretKey = "JWT_SECRET_KEY"
+
+	envAPIAppURL            = "API_APP_URL"
+	envRecommendationAppURL = "RECOMMENDATION_APP_URL"
 )
 
 func init() {
@@ -26,6 +30,22 @@ func init() {
 	if err != nil {
 		log.Fatal("can not find .env file: ", err)
 	}
+}
+
+func GetAPIAppURL() (string, error) {
+	url := os.Getenv(envAPIAppURL)
+	if url == "" {
+		return "", fmt.Errorf("can not found: %v", envAPIAppURL)
+	}
+	return url, nil
+}
+
+func GetRecommendationAppURL() (string, error) {
+	url := os.Getenv(envRecommendationAppURL)
+	if url == "" {
+		return "", fmt.Errorf("can not found: %v", envRecommendationAppURL)
+	}
+	return url, nil
 }
 
 func GetAppPortEnv() (int, error) {

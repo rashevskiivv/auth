@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	env "github.com/rashevskiivv/auth/internal"
+	"github.com/rashevskiivv/auth/internal/entity"
 	"github.com/rashevskiivv/auth/internal/handler"
 	handlerAuth "github.com/rashevskiivv/auth/internal/handler/auth"
 	handlerUser "github.com/rashevskiivv/auth/internal/handler/user"
@@ -74,11 +75,11 @@ func registerHandlers(router *gin.Engine, authHandler handlerAuth.HandlerI, user
 	router.NoRoute(handler.NotFound)
 	router.GET("/_hc", handler.HealthCheck)
 	// Auth
-	router.POST("register", authHandler.RegisterUserHandle)
-	router.POST("login", authHandler.AuthenticateUserHandle)
-	router.GET("check", authHandler.CheckTokenHandle)
+	router.POST(entity.PathRegister, authHandler.RegisterUserHandle)
+	router.POST(entity.PathLogin, authHandler.AuthenticateUserHandle)
+	router.GET(entity.PathCheck, authHandler.CheckTokenHandle)
 	// User
-	group := router.Group("users")
+	group := router.Group(entity.PathUsers)
 	group.Use(handler.TokenAuthMiddleware(authHandler))
 	group.POST("", userHandler.UpsertUserHandle)
 	group.GET("", userHandler.ReadUsersHandle)

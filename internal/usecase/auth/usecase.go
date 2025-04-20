@@ -56,13 +56,15 @@ func (uc *UseCase) RegisterUser(ctx context.Context, input entity.RegisterInput)
 	}
 	input.User.Password = *hashedPassword
 
-	user, err := uc.repoUser.UpsertUser(ctx, input.User) //todo add dbtx
+	user, err := uc.repoUser.UpsertUser(ctx, input.User) // todo add dbtx
 	if err != nil {
 		return nil, err
 	}
 	if user.ID == nil || *user.ID == 0 {
 		return nil, errors.New("user has no id")
 	}
+
+	// todo send 2 requests to both services
 
 	t, err := usecase.GetJWTToken(input.Email)
 	if err != nil {
