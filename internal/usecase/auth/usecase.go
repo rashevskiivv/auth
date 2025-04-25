@@ -1,12 +1,19 @@
 package auth
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"math"
+	"net/http"
 	"strconv"
 
+	env "github.com/rashevskiivv/auth/internal"
+	"github.com/rashevskiivv/auth/internal/client"
 	"github.com/rashevskiivv/auth/internal/entity"
 	"github.com/rashevskiivv/auth/internal/repository/auth"
 	repositoryUser "github.com/rashevskiivv/auth/internal/repository/user"
@@ -16,12 +23,14 @@ import (
 )
 
 type UseCase struct {
+	client    *client.Client
 	repoToken auth.Repository
 	repoUser  repositoryUser.Repository
 }
 
 func NewAuthUseCase(repo auth.Repository, repoUser repositoryUser.Repository) *UseCase {
 	return &UseCase{
+		client:    client.NewClient(),
 		repoToken: repo,
 		repoUser:  repoUser,
 	}
@@ -64,7 +73,10 @@ func (uc *UseCase) RegisterUser(ctx context.Context, input entity.RegisterInput)
 		return nil, errors.New("user has no id")
 	}
 
-	// todo send 2 requests to both services
+	err = uc.makeRequests(input)
+	if err != nil {
+		return nil, err
+	}
 
 	t, err := usecase.GetJWTToken(input.Email)
 	if err != nil {
@@ -87,6 +99,126 @@ func (uc *UseCase) RegisterUser(ctx context.Context, input entity.RegisterInput)
 		},
 	}
 	return &response, nil
+}
+
+func (uc *UseCase) makeRequests(input entity.RegisterInput) error {
+	var (
+		err      error
+		appURL   string
+		apiReq   *client.Request
+		recomReq *client.Request
+	)
+	switch input.WhichRequest {
+	case "":
+		appURL, err = env.GetAPIAppURL()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		apiReq, err = buildReq(input, appURL)
+		if err != nil {
+			return err
+		}
+
+		appURL, err = env.GetRecommendationAppURL()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		recomReq, err = buildReq(input, appURL)
+		if err != nil {
+			return err
+		}
+	case entity.AppRecommendations:
+		appURL, err = env.GetAPIAppURL()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		apiReq, err = buildReq(input, appURL)
+		if err != nil {
+			return err
+		}
+	case entity.AppAPI:
+		appURL, err = env.GetRecommendationAppURL()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		recomReq, err = buildReq(input, appURL)
+		if err != nil {
+			return err
+		}
+	default:
+		return nil
+	}
+	err = uc.sendBothReqs(apiReq, recomReq)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (uc *UseCase) sendBothReqs(apiReq *client.Request, recomReq *client.Request) error {
+	var apiID, recomID int64 = -1, -2
+	for _, req := range []*client.Request{apiReq, recomReq} {
+		resp, err := uc.client.Do(req)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		defer func(Body io.ReadCloser) {
+			err = Body.Close()
+			if err != nil {
+				log.Println(err)
+			}
+		}(resp.Body)
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
+		response := entity.Response{}
+		err = json.Unmarshal(body, &response)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		idf := response.Data.(float64)
+		if apiID < 0 {
+			apiID = int64(math.Round(idf))
+		} else {
+			recomID = int64(math.Round(idf))
+		}
+	}
+	if apiID != recomID {
+		return fmt.Errorf("ids are not the same")
+	}
+	return nil
+}
+
+func buildReq(input entity.RegisterInput, appURL string) (*client.Request, error) {
+	out, err := json.Marshal(input.User)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	req := client.NewRequest(http.MethodPost, appURL+entity.PathUsers, bytes.NewBuffer(out))
+	if req == nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	headers := make(map[string]string, 3)
+	headers["id"] = input.RequestUtils.ID
+	headers["token"] = input.Token
+	headers["Origin"] = entity.AppAuth
+	req.AddAuthHeaders(headers)
+
+	return req, nil
 }
 
 func (uc *UseCase) AuthenticateUser(ctx context.Context, input entity.AuthenticateInput) (*entity.AuthenticateOutput, error) {

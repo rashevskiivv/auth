@@ -9,6 +9,7 @@ type TokenFilter struct {
 
 type RegisterInput struct {
 	User
+	RequestUtils
 }
 
 type RegisterOutput struct {

@@ -37,6 +37,12 @@ func (h *Handler) RegisterUserHandle(ctx *gin.Context) {
 	}
 
 	registerInput := entity.RegisterInput{User: request}
+	id := ctx.Request.Header.Get("id")
+	appSource := ctx.Request.Header.Get("Origin")
+	tokenH := ctx.Request.Header.Get("token")
+	registerInput.RequestUtils.ID = id
+	registerInput.WhichRequest = appSource
+	registerInput.Token = tokenH
 	token, err := h.uc.RegisterUser(ctx, registerInput)
 	if err != nil {
 		log.Println(err)
