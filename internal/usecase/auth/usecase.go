@@ -163,6 +163,10 @@ func (uc *UseCase) makeRequests(input entity.RegisterInput) error {
 func (uc *UseCase) sendBothReqs(apiReq *client.Request, recomReq *client.Request) error {
 	var apiID, recomID int64 = -1, -2
 	for _, req := range []*client.Request{apiReq, recomReq} {
+		if req == nil {
+			continue
+		}
+
 		resp, err := uc.client.Do(req)
 		if err != nil {
 			log.Println(err)
@@ -194,7 +198,7 @@ func (uc *UseCase) sendBothReqs(apiReq *client.Request, recomReq *client.Request
 			recomID = int64(math.Round(idf))
 		}
 	}
-	if apiID != recomID {
+	if apiID != -1 && recomID != -2 && apiID != recomID {
 		return fmt.Errorf("ids are not the same")
 	}
 	return nil
