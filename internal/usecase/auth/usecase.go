@@ -73,11 +73,6 @@ func (uc *UseCase) RegisterUser(ctx context.Context, input entity.RegisterInput)
 		return nil, errors.New("user has no id")
 	}
 
-	err = uc.makeRequests(input)
-	if err != nil {
-		return nil, err
-	}
-
 	t, err := usecase.GetJWTToken(input.Email)
 	if err != nil {
 		return nil, err
@@ -88,6 +83,13 @@ func (uc *UseCase) RegisterUser(ctx context.Context, input entity.RegisterInput)
 		UserID: *user.ID,
 	}
 	err = uc.repoToken.InsertToken(ctx, insertTokenInput)
+	if err != nil {
+		return nil, err
+	}
+
+	input.Token = *t
+	input.RequestUtils.ID = strconv.FormatInt(*user.ID, 10)
+	err = uc.makeRequests(input)
 	if err != nil {
 		return nil, err
 	}
@@ -212,8 +214,8 @@ func buildReq(input entity.RegisterInput, appURL string) (*client.Request, error
 	}
 	req := client.NewRequest(http.MethodPost, appURL+entity.PathUsers, bytes.NewBuffer(out))
 	if req == nil {
-		log.Println(err)
-		return nil, err
+		log.Printf("req with url %v is nil", appURL)
+		return nil, fmt.Errorf("req with url %v is nil", appURL)
 	}
 
 	headers := make(map[string]string, 3)

@@ -2,6 +2,7 @@ package client
 
 import (
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -12,6 +13,7 @@ type Request struct {
 func NewRequest(method string, url string, body io.Reader) *Request {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
+		log.Println(err)
 		return nil
 	}
 	return &Request{Request: req}
